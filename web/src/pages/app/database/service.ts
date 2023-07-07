@@ -51,6 +51,12 @@ export const useEntryDataQuery = (params: any, onSuccess: (data: any) => void) =
       const parse_query = (q: string) => {
         try {
           return parse(q, { mode: "strict" });
+          // TODO compatible with the weapp cloudfunction db command, eg: {status: _.eq(1)}
+          const _ = db.command;
+          const parsed_query = eval(`( ${q} )`);
+          if (Object.prototype.toString.call(parsed_query) === "[object Object]") {
+            return parsed_query;
+          }
         } catch (err) {
           // console.log("err", err);
         }
