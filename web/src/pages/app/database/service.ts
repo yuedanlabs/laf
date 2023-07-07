@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { t } from "i18next";
+import parse from "ejson-shell-parser";
 
 import useDBMStore from "./store";
 
@@ -47,7 +48,17 @@ export const useEntryDataQuery = (params: any, onSuccess: (data: any) => void) =
       if (!currentDB) return;
       const { pageSize = 10, page = 1, _id } = params;
 
-      const query = _id ? { _id } : {};
+      const parse_query = (q: string) => {
+        try {
+          return parse(q, { mode: "strict" });
+        } catch (err) {
+          // console.log("err", err);
+        }
+      };
+      const query = _id ? parse_query(_id) : {};
+      if (!query) {
+        return { list: [], total: 0, page, pageSize };
+      }
 
       // 执行数据查询
       const res = await db
